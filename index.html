@@ -174,9 +174,21 @@ tbody tr.rowFixed:hover{background:rgba(46,125,50,.26)}
 .auth-card h3{margin:0 0 12px;font-size:16px}
 .auth-card label{display:block;font-size:12px;color:var(--sub);margin:8px 0 4px}
 .auth-card input{width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--panel-line);border-radius:8px;font-size:13px}
+.auth-card input:disabled{opacity:.65;background:#f5f5f5}
 .auth-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.auth-actions .tool-btn:disabled{opacity:.55;cursor:wait}
 .auth-err{color:var(--red);font-size:12px;min-height:18px;margin-top:6px}
 .pages-boot{position:fixed;inset:0;background:rgba(250,247,242,.92);z-index:80;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--ink)}
+.auth-transit{position:fixed;inset:0;z-index:95;display:none;align-items:center;justify-content:center;background:rgba(32,40,60,.28);backdrop-filter:blur(2px)}
+.auth-transit.show{display:flex}
+.auth-transit-card{background:#fff;border-radius:14px;padding:22px 28px;min-width:240px;box-shadow:0 16px 40px rgba(40,50,90,.18);display:flex;flex-direction:column;align-items:center;gap:12px}
+.auth-transit-msg{font-size:14px;color:#334;font-weight:600}
+.auth-spinner{width:28px;height:28px;border:3px solid #e6e0f5;border-top-color:#7c5ce1;border-radius:50%;animation:authSpin .7s linear infinite}
+@keyframes authSpin{to{transform:rotate(360deg)}}
+.auth-toast{position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-12px);z-index:100;background:#1f2937;color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;box-shadow:0 8px 24px rgba(0,0,0,.18);max-width:90vw;text-align:center}
+.auth-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.auth-toast.ok{background:linear-gradient(110deg,#1f9d6a,#2eb87e)}
+.auth-toast.err{background:linear-gradient(110deg,#d6455d,#e55d72)}
 
 </style>
 <style>
@@ -1471,38 +1483,108 @@ async function __pagesBoot() {
   document.getElementById('pagesBootMask')?.remove();
 }
 
+function __pagesToast(msg, kind) {
+  let el = document.getElementById('authToast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'authToast';
+    el.className = 'auth-toast';
+    document.body.appendChild(el);
+  }
+  el.className = 'auth-toast show' + (kind ? ' ' + kind : '');
+  el.textContent = msg;
+  clearTimeout(window.__pagesToastTimer);
+  window.__pagesToastTimer = setTimeout(() => {
+    el.classList.remove('show');
+  }, 2200);
+}
+
+function __pagesShowTransit(msg) {
+  let el = document.getElementById('authTransit');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'authTransit';
+    el.className = 'auth-transit';
+    el.innerHTML = '<div class="auth-transit-card"><div class="auth-spinner"></div><div class="auth-transit-msg"></div></div>';
+    document.body.appendChild(el);
+  }
+  el.querySelector('.auth-transit-msg').textContent = msg || '处理中…';
+  el.classList.add('show');
+}
+
+function __pagesHideTransit() {
+  document.getElementById('authTransit')?.classList.remove('show');
+}
+
+function __pagesSetLoginBusy(busy) {
+  const ok = document.getElementById('authOk');
+  const cancel = document.getElementById('authCancel');
+  const user = document.getElementById('authUser');
+  const pass = document.getElementById('authPass');
+  if (ok) {
+    ok.disabled = !!busy;
+    ok.textContent = busy ? '登录中…' : '登录';
+  }
+  if (cancel) cancel.disabled = !!busy;
+  if (user) user.disabled = !!busy;
+  if (pass) pass.disabled = !!busy;
+}
+
 function __pagesToggleAuth() {
   if (window.__PAGES_FULL__) {
-    window.__PAGES_FULL__ = null;
-    sessionStorage.removeItem('aqd_authed');
-    __pagesApplyRaw(window.__PAGES_MASKED__);
+    __pagesShowTransit('正在退出，切回脱敏视图…');
+    setTimeout(() => {
+      window.__PAGES_FULL__ = null;
+      sessionStorage.removeItem('aqd_authed');
+      __pagesApplyRaw(window.__PAGES_MASKED__);
+      __pagesHideTransit();
+      __pagesToast('已退出登录，当前为脱敏公开视图', 'ok');
+    }, 280);
     return;
   }
   document.getElementById('authModal').classList.add('show');
   document.getElementById('authUser').value = 'admin';
   document.getElementById('authPass').value = '';
   document.getElementById('authErr').textContent = '';
+  __pagesSetLoginBusy(false);
+  setTimeout(() => document.getElementById('authPass')?.focus(), 40);
 }
 
 async function __pagesDoLogin() {
   const user = (document.getElementById('authUser').value || '').trim();
   const pass = document.getElementById('authPass').value || '';
   const err = document.getElementById('authErr');
+  if (window.__pagesLoginLock) return;
   if (user !== 'admin') { err.textContent = '账号或密码错误'; return; }
+  if (!pass) { err.textContent = '请输入密码'; return; }
+  err.textContent = '';
+  window.__pagesLoginLock = true;
+  __pagesSetLoginBusy(true);
   try {
     const enc = await __pagesFetchJson('data/encrypted.json');
     const full = await __pagesDecrypt(enc, pass);
+    document.getElementById('authModal').classList.remove('show');
+    __pagesShowTransit('登录成功，正在加载完整数据…');
+    await new Promise((r) => setTimeout(r, 420));
     window.__PAGES_FULL__ = full;
     sessionStorage.setItem('aqd_authed', '1');
-    document.getElementById('authModal').classList.remove('show');
     __pagesApplyRaw(full);
+    __pagesHideTransit();
+    __pagesToast('登录成功 · 已切换到完整数据', 'ok');
   } catch (e) {
     err.textContent = '密码错误，请重试';
+    __pagesToast('登录失败，请检查密码', 'err');
+  } finally {
+    window.__pagesLoginLock = false;
+    __pagesSetLoginBusy(false);
   }
 }
 
 document.getElementById('btnAuth')?.addEventListener('click', __pagesToggleAuth);
-document.getElementById('authCancel')?.addEventListener('click', () => document.getElementById('authModal').classList.remove('show'));
+document.getElementById('authCancel')?.addEventListener('click', () => {
+  if (window.__pagesLoginLock) return;
+  document.getElementById('authModal').classList.remove('show');
+});
 document.getElementById('authOk')?.addEventListener('click', __pagesDoLogin);
 document.getElementById('authPass')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') __pagesDoLogin(); });
 
