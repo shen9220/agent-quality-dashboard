@@ -179,30 +179,236 @@ tbody tr.rowFixed:hover{background:rgba(46,125,50,.26)}
 .pages-boot{position:fixed;inset:0;background:rgba(250,247,242,.92);z-index:80;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--ink)}
 
 </style>
+<style>
+/* ===== V3 视觉布局优化：保留原始 DOM id / 数据处理 / 交互事件 ===== */
+:root{--v3-blue:#2563eb;--v3-cyan:#06b6d4;--v3-border:#e4eaf2;--v3-text:#20344b}
+body{background:linear-gradient(180deg,#edf4fc 0%,#f4f7fb 320px,#f6f8fc 100%)!important;color:var(--v3-text)}
+.wrap{max-width:1920px;margin:0 auto;padding:18px 24px 28px!important}
+.v3-header{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:20px!important;min-height:98px!important;padding:20px 26px!important;border:1px solid #1b4c82!important;border-radius:16px 16px 0 0!important;background:linear-gradient(112deg,#102d54 0%,#16477b 56%,#0f7197 100%)!important;box-shadow:0 12px 30px rgba(22,69,120,.16)!important;color:#fff!important;position:relative;z-index:31}
+.v3-header:before{content:'';position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:radial-gradient(circle at 70% -90%,rgba(255,255,255,.22),transparent 55%)}
+.v3-header .title{font-size:27px!important;font-weight:800!important;letter-spacing:.8px;color:#fff!important;line-height:1.35!important}
+.v3-header .dot{background:#38dfc8!important;box-shadow:0 0 0 5px rgba(56,223,200,.15)!important}
+.v3-header .sub,.v3-header .sub b{color:#d0e6f6!important;font-size:12px!important;line-height:1.8!important}
+.v3-brand{min-width:0;flex:1}.v3-actions{display:flex;gap:9px;align-items:center;justify-content:flex-end;flex-wrap:wrap;position:relative;z-index:1}
+.v3-actions .tool-btn{padding:9px 15px!important;border:1px solid rgba(255,255,255,.25)!important;border-radius:9px!important;background:rgba(255,255,255,.12)!important;color:#fff!important;white-space:nowrap;transition:.2s}
+.v3-actions .tool-btn:hover{background:rgba(255,255,255,.25)!important;transform:translateY(-1px)}
+.v3-actions .auth-badge{background:rgba(32,214,169,.14)!important;border:1px solid rgba(65,234,191,.45)!important;color:#b8ffe7!important;padding:8px 12px!important;margin:0!important}
+.v3-filterbar{display:flex;align-items:center;gap:18px;justify-content:space-between;padding:16px 22px;background:#fff;border:1px solid #e0e9f3;border-top:0;border-radius:0 0 16px 16px;box-shadow:0 8px 20px rgba(33,72,116,.055);margin-bottom:16px;position:relative;z-index:30}
+.v3-filter-caption{font-size:13px;font-weight:800;color:#1e4c7c;white-space:nowrap;padding-left:11px;border-left:3px solid #10b9d4}
+.v3-filters{display:flex;align-items:center;gap:14px;flex:1;min-width:0;flex-wrap:wrap}
+.v3-filters .ss{display:flex!important;align-items:center!important;gap:8px!important;min-width:175px!important;flex:1 1 190px!important;max-width:330px!important}
+.v3-filters .ss-wide{flex:1.3 1 235px!important;max-width:390px!important}
+.v3-filters .ss-label{font-size:12px!important;color:#52677f!important;white-space:nowrap;font-weight:650}
+.v3-filters .ss-wrap{flex:1;min-width:0}
+.v3-filters .ss-box{background:#f7faff!important;border:1px solid #d8e3f1!important;border-radius:9px!important;min-height:38px!important;box-shadow:none!important;transition:.2s}
+.v3-filters .ss-box:focus-within{border-color:#3597ef!important;box-shadow:0 0 0 3px rgba(37,99,235,.09)!important;background:#fff!important}
+.v3-filters .ss-menu{z-index:70!important;box-shadow:0 12px 30px rgba(25,64,110,.16)!important}
+.v3-filters #btnReset{white-space:nowrap;border:1px solid #dbe5f0!important;background:#f3f7fc!important;border-radius:9px!important;color:#45627f!important;padding:10px 15px!important}
+.v3-filter-right{margin-left:auto;border-left:1px solid #e2e9f2;padding-left:18px;display:flex;align-items:center}
+.v3-filter-right .src-toggle{position:static!important;display:flex!important;flex-direction:row!important;align-items:center;background:#eff4fa!important;padding:4px!important;border:1px solid #dfe8f2!important;border-radius:10px!important;box-shadow:none!important}
+.v3-filter-right .src-toggle span{border-radius:7px!important;padding:8px 15px!important;line-height:1.2!important}
+.v3-filter-right .src-toggle span.active{background:#2468df!important;color:#fff!important;box-shadow:0 2px 7px rgba(36,104,223,.25)!important}
+.kpis{gap:13px!important;margin-bottom:16px!important}
+.kpis .card.kpi{min-height:105px!important;border:1px solid #e4ebf4!important;border-radius:14px!important;background:#fff!important;box-shadow:0 5px 18px rgba(24,60,110,.06)!important;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s!important}
+.kpis .card.kpi:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(24,60,110,.12)!important}
+.kpis .card.kpi:before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--kpi-color,#2563eb)}
+.kpis .card.kpi:nth-child(1){--kpi-color:#2563eb;--kpi-bg:#eaf1ff}.kpis .card.kpi:nth-child(2){--kpi-color:#06a9b8;--kpi-bg:#e5f9fa}.kpis .card.kpi:nth-child(3){--kpi-color:#7c5ce1;--kpi-bg:#f1edff}.kpis .card.kpi:nth-child(4){--kpi-color:#ef9b35;--kpi-bg:#fff4e6}.kpis .card.kpi:nth-child(5){--kpi-color:#13aa80;--kpi-bg:#e5f8f0}.kpis .card.kpi:nth-child(6){--kpi-color:#e9556b;--kpi-bg:#fff0f2}
+.kpis .icon{background:var(--kpi-bg)!important;color:var(--kpi-color)!important;border:0!important;border-radius:11px!important}
+.kpis .kpiValue{color:var(--kpi-color)!important;font-weight:800!important;font-size:27px!important}
+.kpis .kpiName{color:#718096!important;font-size:12px!important}
+.card:not(.kpi){border:1px solid #e3eaf3!important;border-radius:14px!important;box-shadow:0 5px 18px rgba(31,70,120,.055)!important;background:#fff!important}
+.card:not(.kpi) .cardTitle{color:#284965!important}
+.card:not(.kpi) .dotbar{background:#0db8ce!important;box-shadow:none!important}
+.badgeTabs span:hover,.badgeTabs button:hover,.tool-btn:hover{filter:brightness(.97)}
+@media(max-width:1450px){.v3-header{flex-wrap:wrap}.v3-actions{justify-content:flex-start}.v3-filterbar{flex-wrap:wrap}.v3-filters .ss{max-width:none!important}}
+@media(max-width:900px){.wrap{padding:10px!important}.v3-header{padding:17px!important}.v3-header .title{font-size:21px!important}.v3-filterbar{padding:14px!important}.v3-filters{width:100%}.v3-filters .ss{flex:1 1 220px!important}.v3-filter-right{margin-left:0;border-left:0;padding-left:0}}
+
+
+/* V4: 纯视觉层。保留全部原始数据、业务脚本、DOM ID 与交互事件。 */
+.kpis .card.kpi{
+  position:relative!important;overflow:hidden!important;
+  border-radius:18px!important;
+  box-shadow:0 8px 25px rgba(45,75,125,.075)!important;
+  border:1px solid #e1eaf5!important;
+}
+.kpis .card.kpi:nth-child(1){--accent:#2862ef;--accent-light:#9ac5ff}
+.kpis .card.kpi:nth-child(2){--accent:#0ba5b7;--accent-light:#9de8e8}
+.kpis .card.kpi:nth-child(3){--accent:#8057e8;--accent-light:#c9b6ff}
+.kpis .card.kpi:nth-child(4){--accent:#ff9a2e;--accent-light:#ffdc9b}
+.kpis .card.kpi:nth-child(5){--accent:#18a77f;--accent-light:#9debd2}
+.kpis .card.kpi:nth-child(6){--accent:#ef4d70;--accent-light:#ffc2d0}
+.kpis .card.kpi::before{
+ content:""!important;display:block!important;position:absolute!important;
+ top:0!important;left:0!important;right:0!important;
+ width:100%!important;max-width:none!important;height:3px!important;
+ border-radius:0!important;
+ background:linear-gradient(90deg,var(--accent) 0%,var(--accent) 20%,var(--accent-light) 73%,rgba(255,255,255,.85) 100%)!important;
+ box-shadow:none!important;z-index:4!important;pointer-events:none!important;
+}
+.kpis .card.kpi::after{display:none!important}
+.kpis .card.kpi .kpiValue{color:var(--accent)!important}
+.kpis .card.kpi .icon{color:var(--accent)!important;background:color-mix(in srgb,var(--accent) 10%,white)!important}
+.kpis .card.kpi:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(42,91,145,.13)!important}
+.kpis .card.kpi{transition:transform .22s ease,box-shadow .22s ease}
+/* 下方大卡片：彩虹色短渐变标识，不贯穿整张卡片 */
+.risk .card,.main .card,.bottom .card,.card:not(.kpi){
+ position:relative;overflow:hidden;
+}
+.risk .card::before,.main .card::before,.bottom .card::before,.card:not(.kpi)::before{
+ content:""!important;position:absolute!important;left:0!important;right:auto!important;top:0!important;
+ width:clamp(140px,28%,320px)!important;max-width:65%!important;height:2px!important;
+ border-radius:0 0 7px 0!important;
+ background:linear-gradient(90deg,var(--panel-accent,#16b9d0) 0%,var(--panel-accent-light,#a8edf2) 66%,transparent 100%)!important;
+ box-shadow:none!important;pointer-events:none!important;z-index:3!important;
+}
+.risk .card:nth-child(1){--panel-accent:#ef6b75;--panel-accent-light:#ffc1c4}
+.risk .card:nth-child(2){--panel-accent:#ff9d38;--panel-accent-light:#ffdfa7}
+.main .card:nth-child(1){--panel-accent:#e5ae22;--panel-accent-light:#fff0a7}
+.main .card:nth-child(2){--panel-accent:#20b783;--panel-accent-light:#b2f3d5}
+.main .card:nth-child(3){--panel-accent:#1aafd5;--panel-accent-light:#a6e9ff}
+.main .card:nth-child(4){--panel-accent:#6479ee;--panel-accent-light:#c6d0ff}
+.bottom .card:nth-child(1){--panel-accent:#9257e8;--panel-accent-light:#e2c9ff}
+.bottom .card:nth-child(2){--panel-accent:#ec72a8;--panel-accent-light:#ffd2e5}
+.bottom .card:nth-child(3){--panel-accent:#ef9560;--panel-accent-light:#ffdec3}
+.bottom .card:nth-child(4){--panel-accent:#13a8a5;--panel-accent-light:#a7eeeb}
+.card:not(.kpi){--panel-accent:#16b9d0;--panel-accent-light:#a8edf2}
+.risk .card:nth-child(1){--panel-accent:#ef6b75;--panel-accent-light:#ffc1c4}
+.risk .card:nth-child(2){--panel-accent:#ff9d38;--panel-accent-light:#ffdfa7}
+.main .card:nth-child(1){--panel-accent:#e5ae22;--panel-accent-light:#fff0a7}
+.main .card:nth-child(2){--panel-accent:#20b783;--panel-accent-light:#b2f3d5}
+.main .card:nth-child(3){--panel-accent:#1aafd5;--panel-accent-light:#a6e9ff}
+.main .card:nth-child(4){--panel-accent:#6479ee;--panel-accent-light:#c6d0ff}
+.bottom .card:nth-child(1){--panel-accent:#9257e8;--panel-accent-light:#e2c9ff}
+.bottom .card:nth-child(2){--panel-accent:#ec72a8;--panel-accent-light:#ffd2e5}
+.bottom .card:nth-child(3){--panel-accent:#ef9560;--panel-accent-light:#ffdec3}
+.bottom .card:nth-child(4){--panel-accent:#13a8a5;--panel-accent-light:#a7eeeb}
+@media(prefers-reduced-motion:reduce){.kpis .card.kpi{transition:none}}
+
+
+/* 仅覆盖顶部品牌栏视觉；保留原有结构、交互、数据 */
+.v3-header{
+  background:linear-gradient(146deg,#c96be8 0%,#bb62e9 23%,#a05fee 43%,#825cf1 59%,#6651f4 79%,#6050f4 100%)!important;
+  border-color:rgba(122,81,218,.34)!important;
+  box-shadow:0 12px 30px rgba(107,80,217,.16)!important;
+}
+.v3-header::before{
+  background:radial-gradient(ellipse at 18% 2%,rgba(255,255,255,.18),transparent 49%),
+             linear-gradient(160deg,rgba(255,255,255,.09),transparent 48%,rgba(69,39,190,.08) 100%)!important;
+}
+.v3-header .title .dot{background:#fff!important;box-shadow:0 0 0 4px rgba(255,255,255,.2)!important}
+.v3-actions .tool-btn{background:rgba(255,255,255,.14)!important;border-color:rgba(255,255,255,.35)!important}
+.v3-actions .tool-btn:hover{background:rgba(255,255,255,.25)!important}
+
+
+/* 仅更改各数据表的字段名/表头；卡片标题保持 V4.2 原样。 */
+.card.panel .table-wrap thead th,
+.card.panel table thead th,
+.table-wrap thead th,
+.r-tables thead th{
+  background:linear-gradient(108deg,#f8edff 0%,#eeeaff 55%,#e8eaff 100%)!important;
+  color:#7952db!important;
+  -webkit-text-fill-color:#7952db!important;
+  font-weight:700!important;
+  border-bottom:1px solid rgba(135,92,228,.24)!important;
+}
+.table-wrap thead th:first-child,.r-tables thead th:first-child{border-left:3px solid #c96be8!important}
+.table-wrap thead th:hover,.r-tables thead th:hover{background:#ece5ff!important;color:#6049cf!important}
+/* 恢复卡片 title 原色，保留顶部 Logo 渐变与彩虹细线。 */
+
+
+/* V4.5 品牌统一：仅视觉覆盖，不修改业务脚本、筛选及统计。 */
+:root{--brand-l:#c96be8;--brand-m:#985eef;--brand-r:#6050f4}
+/* 1. 卡片标题及装饰元素统一为品牌紫色，保留正文/风险颜色语义 */
+.card.panel .cardTitle,.card.panel .cardTitle .left,
+.card.panel .cardTitle .left:not(.muted){
+ color:#7852d8!important;
+ -webkit-text-fill-color:#7852d8!important;
+ font-weight:700!important;
+}
+.card.panel .cardTitle .dotbar,.card.panel .cardTitle .dot{
+ background:linear-gradient(180deg,#c96be8,#6050f4)!important;
+ box-shadow:none!important;
+}
+/* 2. 所有非 KPI 大卡片顶部，统一短渐变紫粉→蓝紫；细线 2px */
+.card.panel,.card:not(.kpi){position:relative}
+.card.panel::before,.card:not(.kpi)::before{
+ content:""!important;position:absolute!important;top:0!important;left:0!important;right:auto!important;
+ width:clamp(150px,30%,350px)!important;max-width:65%!important;height:2px!important;
+ background:linear-gradient(90deg,#c96be8 0%,#985eef 49%,#6050f4 80%,transparent 100%)!important;
+ border-radius:0 0 5px 0!important;box-shadow:none!important;z-index:3!important;pointer-events:none!important;
+}
+/* 3. 整行表头使用同一条连续渐变，而不是每列分别渐变 */
+.card.panel .table-wrap table{border-collapse:separate!important;border-spacing:0!important}
+.card.panel .table-wrap thead tr{
+ background:linear-gradient(100deg,#f5e7fd 0%,#eee8fc 42%,#e7e8ff 100%)!important;
+}
+.card.panel .table-wrap thead th{
+ background:transparent!important;
+ color:#7653d5!important;-webkit-text-fill-color:#7653d5!important;
+ border-bottom:1px solid rgba(126,88,216,.2)!important;
+ border-left:0!important;
+ box-shadow:none!important;
+}
+.card.panel .table-wrap thead th:hover{background:transparent!important;color:#7653d5!important}
+.card.panel .table-wrap thead tr{position:sticky;top:0;z-index:5}
+/* 4. 已修复淡绿底；未修复、未回归维持普通底色 */
+#tbodyProb tr.rowFixed,
+#tbodyProb tr:has(.fxYes){background:#eaf8f0!important}
+#tbodyProb tr.rowFixed:hover,
+#tbodyProb tr:has(.fxYes):hover{background:#ddf2e6!important}
+#tbodyProb tr:not(.rowFixed):not(:has(.fxYes)){background:transparent}
+#tbodyProb tr:not(.rowFixed):not(:has(.fxYes)):hover{background:rgba(96,80,244,.045)}
+/* 5. 其余字体、图表切换按钮与控件保持 V4.2 原始视觉 */
+
+
+/* 质量判定卡：全部周期为中性石墨灰，单周期按既有五档判定动态切换 */
+#kpiRow .card.kpi:nth-child(5){--accent:#64748b!important;--accent-light:#cbd5e1!important;--kpi-color:#64748b!important;--kpi-bg:#f1f5f9!important}
+#kpiRow .card.kpi:nth-child(5)[data-quality="优质"]{--accent:#19a66a!important;--accent-light:#a7e8c6!important;--kpi-color:#19a66a!important;--kpi-bg:#e9f9f0!important}
+#kpiRow .card.kpi:nth-child(5)[data-quality="良好"]{--accent:#3575e6!important;--accent-light:#bdd6ff!important;--kpi-color:#3575e6!important;--kpi-bg:#ebf3ff!important}
+#kpiRow .card.kpi:nth-child(5)[data-quality="一般"]{--accent:#d5a01a!important;--accent-light:#f6e8a8!important;--kpi-color:#d5a01a!important;--kpi-bg:#fff9e5!important}
+#kpiRow .card.kpi:nth-child(5)[data-quality="较差"]{--accent:#ea8533!important;--accent-light:#ffd5ae!important;--kpi-color:#ea8533!important;--kpi-bg:#fff2e8!important}
+#kpiRow .card.kpi:nth-child(5)[data-quality="高风险"]{--accent:#e64d6b!important;--accent-light:#ffc4d0!important;--kpi-color:#e64d6b!important;--kpi-bg:#fff0f3!important}
+#kpiRow .card.kpi:nth-child(5) .kpiValue{color:var(--accent)!important;-webkit-text-fill-color:var(--accent)!important}
+#kpiRow .card.kpi:nth-child(5) .icon{color:var(--accent)!important;background:var(--kpi-bg)!important}
+#kpiRow .card.kpi:nth-child(5)::before{background:linear-gradient(90deg,var(--accent) 0%,var(--accent) 20%,var(--accent-light) 73%,rgba(255,255,255,.85) 100%)!important}
+
+/* 数据说明移到六大卡上方 */
+.note{margin:12px 0 10px!important}
+#ssPeriod{flex:1.3 1 235px!important;max-width:390px!important}
+
+</style>
+
 </head>
 <body>
 <div class="wrap" id="dashboard">
-  <header class="header">
-    <div>
+  <header class="header v3-header">
+    <div class="v3-brand">
       <div class="title"><span class="dot"></span>广告 Agent 质量看板</div>
       <div class="sub" id="subline"></div>
     </div>
-    <div class="toolbar">
+    <div class="v3-actions">
+      <span class="auth-badge" id="authBadge">公开·脱敏</span><div class="tool-btn" id="btnAuth" title="登录后查看完整字段与回放">登录</div>
+      <div class="tool-btn" id="btnFull" title="全屏/缩回">⛶ 全屏</div>
+    </div>
+  </header>
+  <div class="v3-filterbar">
+    <div class="v3-filter-caption">数据筛选</div>
+    <div class="v3-filters">
       <div id="ssTenant"></div>
       <div id="ssPeriod"></div>
       <div id="ssSpeaker"></div>
       <div class="tool-btn" id="btnReset" title="清除筛选，回到默认">↻ 重置</div>
-      <span class="auth-badge" id="authBadge">公开·脱敏</span><div class="tool-btn" id="btnAuth" title="登录后查看完整字段与回放">登录</div>
-      <div class="tool-btn" id="btnFull" title="全屏/缩回">⛶ 全屏</div>
+    </div>
+    <div class="v3-filter-right">
       <div class="src-toggle" id="srcToggle" title="数据源：全量=窗口内全部会话；抽查=每周抽100">
         <span data-src="full">全量</span><span data-src="sample">抽查</span>
       </div>
     </div>
-  </header>
+  </div>
 
+  <div class="note" id="note"></div>
   <section class="kpis" id="kpiRow"></section>
   <section class="risk" id="riskRow"></section>
-  <div class="note" id="note"></div>
 
   <div class="row r-causes">
     <div class="card causeBox" id="causeMain"></div>
@@ -348,15 +554,52 @@ function switchSource(mode){
   render();
 }
 
+/** 五档配色与质量判定 KPI / 周数饼图一致（V4.6） */
+const Q_PALETTE = {
+  '优质':  {color:'#19a66a', light:'#a7e8c6'},
+  '良好':  {color:'#3575e6', light:'#bdd6ff'},
+  '一般':  {color:'#d5a01a', light:'#f6e8a8'},
+  '较差':  {color:'#ea8533', light:'#ffd5ae'},
+  '高风险':{color:'#e64d6b', light:'#ffc4d0'},
+};
+/** 严重问题 KPI 顶线 / 缺陷图红色；一般判定顶线 / 缺陷图黄色 */
+const SEVERE_LINE = {color:'#ef4d70', light:'#ffc2d0'};
+const WARN_LINE   = {color:'#d5a01a', light:'#f6e8a8'};
+const LOW_LINE    = {color:'#18a77f', light:'#9debd2'};
+
 function qualityMeta(n){
-  if(n<=5) return {name:'优质',tag:'状态良好',cls:'good',color:'#1de0b2'};
-  if(n<=10) return {name:'良好',tag:'保持稳定',cls:'ok',color:'#1689ff'};
-  if(n<=15) return {name:'一般',tag:'重点关注',cls:'warn',color:'#e6b422'};
-  if(n<=19) return {name:'较差',tag:'限期改善',cls:'worse',color:'#ff9d3d'};
-  return {name:'高风险',tag:'优先处理',cls:'bad',color:'#ff4d67'};
+  if(n<=5) return {name:'优质',tag:'状态良好',cls:'good',...Q_PALETTE['优质']};
+  if(n<=10) return {name:'良好',tag:'保持稳定',cls:'ok',...Q_PALETTE['良好']};
+  if(n<=15) return {name:'一般',tag:'重点关注',cls:'warn',...Q_PALETTE['一般']};
+  if(n<=19) return {name:'较差',tag:'限期改善',cls:'worse',...Q_PALETTE['较差']};
+  return {name:'高风险',tag:'优先处理',cls:'bad',...Q_PALETTE['高风险']};
+}
+function defectLineStyle(code){
+  const lv = (DATA.enumImpact[code]||'中');
+  if(lv==='高') return SEVERE_LINE;
+  if(lv==='中') return WARN_LINE;
+  return LOW_LINE;
+}
+function defectBarColor(code){
+  const s=defectLineStyle(code);
+  return new echarts.graphic.LinearGradient(0,0,1,0,[
+    {offset:0,color:s.color},{offset:1,color:s.light}
+  ]);
+}
+function defectPieColor(code){
+  const s=defectLineStyle(code);
+  return new echarts.graphic.LinearGradient(0,0,1,1,[
+    {offset:0,color:s.color},{offset:1,color:s.light}
+  ]);
+}
+function judgPieColor(name){
+  const s=Q_PALETTE[name] || {color:'#64748b', light:'#cbd5e1'};
+  return new echarts.graphic.LinearGradient(0,0,1,1,[
+    {offset:0,color:s.color},{offset:1,color:s.light}
+  ]);
 }
 function qualityForWeek(w,n){
-  if(w.cycle_status!=='success') return {name:w.quality||'—',tag:'沿用已发布结果',cls:'ok',color:'#1689ff'};
+  if(w.cycle_status!=='success') return {name:w.quality||'—',tag:'沿用已发布结果',cls:'ok',color:'#3575e6',light:'#bdd6ff'};
   // 质量判定统一按「本周确认问题数」走五档风险；
   // 不再采用相对上一周的「优质/劣质/基线」（问题数多却显示优质会误导）
   return qualityMeta(n);
@@ -366,8 +609,7 @@ function impactRank(code){
   return lv==='高'?0:lv==='中'?1:2;
 }
 function badgeColor(code){
-  const r=impactRank(code);
-  return ['#ff4d67','#ff9d3d','#e6b422','#1689ff','#1de0b2'][Math.min(r*2,4)];
+  return defectLineStyle(code).color;
 }
 function isAllPeriod(){ return state.period === '__ALL__'; }
 function deltaHtml(cur, prev){
@@ -494,7 +736,7 @@ function createSearchSelect(mountId, {label, placeholder, options, value, onChan
   return {
     setValue(v){ cur=v; input.value=labelOf(cur); syncTitle(); },
     getValue(){ return cur; },
-    setOptions(next){ options=next; }
+    setOptions(next){ options=next; if(!options.some(o=>String(o.value)===String(cur))){ cur=''; } input.value=labelOf(cur); syncTitle(); }
   };
 }
 
@@ -509,6 +751,34 @@ function sortTenants(list){
   });
 }
 
+/** 会话人选项：仅当前周期（+当前租户筛选）有问题 session 命中的问话人；标签「人名（租户）」 */
+function speakerOptionsForScope(){
+  const rows=(DATA.problems||[]).filter(p=>{
+    if(!p.speaker) return false;
+    if(!isAllPeriod() && p.week_start!==state.period) return false;
+    if(state.tenant && String(p.tenant_id)!==state.tenant) return false;
+    return true;
+  });
+  const map=new Map();
+  rows.forEach(p=>{
+    const name=String(p.speaker);
+    const tid=String(p.tenant_id||'');
+    const tname=p.tenant_name || DATA.tenantMap[tid] || tid || '未知租户';
+    const key=`${name}@@${tid}`;
+    if(!map.has(key)) map.set(key,{value:key,label:`${name}（${tname}）`});
+  });
+  return [{value:'',label:'全部'}, ...[...map.values()].sort((a,b)=>a.label.localeCompare(b.label,'zh'))];
+}
+function refreshSpeakerOptions(){
+  const opts=speakerOptionsForScope();
+  filterCtrls.speaker?.setOptions(opts);
+  if(state.speaker && !opts.some(o=>String(o.value)===String(state.speaker))){
+    state.speaker='';
+    filterCtrls.speaker?.setValue('');
+  } else {
+    filterCtrls.speaker?.setValue(state.speaker||'');
+  }
+}
 function fillFilters(){
   const tenantsSorted=sortTenants(DATA.tenants||[]);
   const tenantOpts=[{value:'',label:'全部租户'}, ...tenantsSorted.map(t=>({value:t.id,label:t.name}))];
@@ -517,12 +787,10 @@ function fillFilters(){
     {value:'__ALL__', label:'全部'},
     ...weeksDesc.map(w=>({value:w.week_start, label:`${w.week_start} ~ ${w.week_end}`}))
   ];
-  const speakers=new Set();
-  (DATA.problems||[]).forEach(p=>{ if(p.speaker) speakers.add(p.speaker); });
-  const speakerOpts=[{value:'',label:'全部'}, ...[...speakers].sort((a,b)=>a.localeCompare(b,'zh')).map(n=>({value:n,label:n}))];
+  const speakerOpts=speakerOptionsForScope();
 
-  filterCtrls.tenant=createSearchSelect('ssTenant',{label:'租户',placeholder:'全部租户',options:tenantOpts,value:state.tenant,onChange:v=>{state.tenant=v; scheduleRender();}});
-  filterCtrls.period=createSearchSelect('ssPeriod',{label:'周期',placeholder:'全部',options:periodOpts,value:state.period,wide:true,onChange:v=>{state.period=v; scheduleRender();}});
+  filterCtrls.tenant=createSearchSelect('ssTenant',{label:'租户',placeholder:'全部租户',options:tenantOpts,value:state.tenant,onChange:v=>{state.tenant=v; refreshSpeakerOptions(); scheduleRender();}});
+  filterCtrls.period=createSearchSelect('ssPeriod',{label:'周期',placeholder:'全部',options:periodOpts,value:state.period,wide:true,onChange:v=>{state.period=v; refreshSpeakerOptions(); scheduleRender();}});
   filterCtrls.speaker=createSearchSelect('ssSpeaker',{label:'会话人',placeholder:'全部',options:speakerOpts,value:state.speaker,onChange:v=>{state.speaker=v; scheduleRender();}});
 }
 
@@ -536,6 +804,7 @@ function resetFilters(){
   filterCtrls.tenant?.setValue('');
   filterCtrls.period?.setValue('__ALL__');
   filterCtrls.speaker?.setValue('');
+  refreshSpeakerOptions();
   document.querySelectorAll('#weekChartTabs [data-mode]').forEach(x=>x.classList.toggle('active',x.dataset.mode===state.weekMode));
   document.querySelectorAll('#weekChartTabs [data-range]').forEach(x=>x.classList.toggle('active',x.dataset.range===state.weekRange));
   scheduleRender();
@@ -556,7 +825,12 @@ function filterProblems(list, weekStart){
     if(weekStart && p.week_start!==weekStart) return false;
     if(!weekStart && !isAllPeriod() && p.week_start!==state.period) return false;
     if(state.tenant && String(p.tenant_id)!==state.tenant) return false;
-    if(state.speaker && (p.speaker||'')!==state.speaker) return false;
+    if(state.speaker){
+      if(String(state.speaker).includes('@@')){
+        const [sp,tid]=String(state.speaker).split('@@');
+        if((p.speaker||'')!==sp || String(p.tenant_id||'')!==tid) return false;
+      } else if((p.speaker||'')!==state.speaker) return false;
+    }
     return true;
   });
 }
@@ -605,7 +879,7 @@ function renderKpis(){
     if(prev && i<=idx-1){ prevCumP+=n; }
   });
   if(isAllPeriod()){ cumP=curN; cumS=curSample; }
-  const q=isAllPeriod()?{name:'—',tag:'跨周汇总',cls:'ok',color:'#1689ff'}:qualityForWeek(cur,curN);
+  const q=isAllPeriod()?{name:'—',tag:'跨周汇总',cls:'ok',color:'#64748b',light:'#cbd5e1'}:qualityForWeek(cur,curN);
   const rateCum = cumS? Math.round(100*cumP/cumS):0;
   const rateWeek = curSample? Math.round(100*curN/curSample):0;
   const rateSample = isAllPeriod()?100:Math.round(100*curSample/(cur.pool_size||100));
@@ -623,7 +897,7 @@ function renderKpis(){
       <div class="ring" style="${ringStyle(rateSample,'#1de0b2')}"><span>${rateSample}%</span></div></div>
     <div class="card kpi"><div class="kpiLeft"><div class="icon">!</div><div><div class="kpiName">${isAllPeriod()?'问题数':'本周问题数'}</div><div class="kpiValue">${curN} ${showDelta?deltaHtml(curN, prevN):''}</div></div></div>
       <div class="ring" style="${ringStyle(rateWeek,'#ff9d3d')}"><span>${rateWeek}%</span></div></div>
-    <div class="card kpi"><div class="tag ${q.cls}">${q.tag}</div><div class="kpiLeft"><div class="icon">✓</div><div><div class="kpiName">${isAllPeriod()?'质量判定':'本周质量判定'}</div><div class="kpiValue" style="color:${q.color};font-size:18px">${isAllPeriod()?'—':q.name}</div></div></div></div>
+    <div class="card kpi" data-quality="${isAllPeriod()?'all':q.name}"><div class="tag ${q.cls}">${q.tag}</div><div class="kpiLeft"><div class="icon">✓</div><div><div class="kpiName">${isAllPeriod()?'质量判定':'本周质量判定'}</div><div class="kpiValue" style="color:${q.color};font-size:18px">${isAllPeriod()?'—':q.name}</div></div></div></div>
     <div class="card kpi"><div class="kpiLeft"><div class="icon">⚠</div><div><div class="kpiName">严重问题</div><div class="kpiValue">${sev} ${showDelta?deltaHtml(sev, sevPrev):''} ${showDelta?deltaPctHtml(sev, sevPrev):''}</div></div></div>
       <div class="ring" style="${ringStyle(sevRing,'#ff4d67')}"><span>${showDelta && sevPrev!=null && sevPrev>0 ? Math.round(100*(sev-sevPrev)/sevPrev)+'%' : (sev?sev:0)}</span></div></div>
   `;
@@ -820,7 +1094,7 @@ function renderDefect(){
       legend:{type:'scroll',bottom:0,textStyle:{color:'#7a6e5f',fontSize:10}},
       series:[{type:'pie',radius:['36%','62%'],center:['50%','45%'],
         label:{color:'#3d3429',formatter:'{b}\n{d}%'},
-        data:arr.slice().reverse().map(d=>({name:d.name,value:d.value,itemStyle:{color:badgeColor(d.code)}}))}]
+        data:arr.slice().reverse().map(d=>({name:d.name,value:d.value,itemStyle:{color:defectPieColor(d.code)}}))}]
     }, true);
   } else {
     chart.setOption({
@@ -828,7 +1102,7 @@ function renderDefect(){
       tooltip:{trigger:'axis',axisPointer:{type:'shadow'},backgroundColor:'#fffdf9',borderColor:'#1689ff',textStyle:{color:'#3d3429'}},
       xAxis:{type:'value',splitLine:{lineStyle:{color:'rgba(139,115,85,.1)'}},axisLabel:{color:'#7a6e5f'}},
       yAxis:{type:'category',data:arr.map(d=>d.name),axisLabel:{color:'#3d3429',fontSize:11,width:130,overflow:'truncate'},axisLine:{lineStyle:{color:'#d9cfc0'}}},
-      series:[{type:'bar',data:arr.map(d=>({value:d.value,itemStyle:{color:badgeColor(d.code)}})),barWidth:14,
+      series:[{type:'bar',data:arr.map(d=>({value:d.value,itemStyle:{color:defectBarColor(d.code)}})),barWidth:14,
         label:{show:true,position:'right',color:'#7a6e5f'}}]
     }, true);
   }
@@ -861,7 +1135,7 @@ function renderTenantJudg(){
     const ps=filterProblems(DATA.problems, w.week_start);
     const n=new Set(ps.map(p=>p.session_id)).size;
     const q=qualityForWeek(w,n);
-    if(!qmap[q.name]) qmap[q.name]={name:q.name,value:0,weeks:[],color:q.color};
+    if(!qmap[q.name]) qmap[q.name]={name:q.name,value:0,weeks:[],color:q.color,light:q.light||(Q_PALETTE[q.name]||{}).light};
     qmap[q.name].value+=1;
     qmap[q.name].weeks.push(`${w.week_start}~${w.week_end}（${n}）`);
   });
@@ -874,7 +1148,7 @@ function renderTenantJudg(){
     legend:{bottom:0,textStyle:{color:'#7a6e5f',fontSize:11}},
     series:[{type:'pie',radius:['34%','62%'],center:['50%','45%'],
       label:{color:'#3d3429',formatter:(p)=>`${p.name} · ${p.value} 周\n${p.percent}%`},
-      data:judg.map(d=>({name:d.name,value:d.value,itemStyle:{color:d.color}}))}]
+      data:judg.map(d=>({name:d.name,value:d.value,itemStyle:{color:judgPieColor(d.name)}}))}]
   }, true);
 }
 
