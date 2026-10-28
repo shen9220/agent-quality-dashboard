@@ -175,6 +175,7 @@ tbody tr.rowFixed:hover{background:rgba(46,125,50,.26)}
 .auth-card label{display:block;font-size:12px;color:var(--sub);margin:8px 0 4px}
 .auth-card input{width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--panel-line);border-radius:8px;font-size:13px}
 .auth-card input:disabled{opacity:.65;background:#f5f5f5}
+.auth-card input[readonly]{background:#f3f1ec;color:#5c5348;cursor:default}
 .auth-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
 .auth-actions .tool-btn:disabled{opacity:.55;cursor:wait}
 .auth-err{color:var(--red);font-size:12px;min-height:18px;margin-top:6px}
@@ -508,9 +509,9 @@ body{background:linear-gradient(180deg,#edf4fc 0%,#f4f7fb 320px,#f6f8fc 100%)!im
   <div class="auth-card">
     <h3>登录查看完整数据</h3>
     <label>账号</label>
-    <input id="authUser" autocomplete="username" />
+    <input id="authUser" name="username" autocomplete="username" value="admin" readonly />
     <label>密码</label>
-    <input id="authPass" type="password" autocomplete="current-password" />
+    <input id="authPass" name="password" type="password" autocomplete="current-password" />
     <div class="auth-err" id="authErr"></div>
     <div class="auth-actions">
       <button type="button" class="tool-btn" id="authCancel">取消</button>
@@ -1543,11 +1544,17 @@ function __pagesToggleAuth() {
     return;
   }
   document.getElementById('authModal').classList.add('show');
-  document.getElementById('authUser').value = 'admin';
+  const authUser = document.getElementById('authUser');
+  if (authUser) {
+    authUser.value = 'admin';
+    authUser.defaultValue = 'admin';
+    authUser.readOnly = true;
+  }
   document.getElementById('authPass').value = '';
   document.getElementById('authErr').textContent = '';
   __pagesSetLoginBusy(false);
-  setTimeout(() => document.getElementById('authPass')?.focus(), 40);
+  // 账号已带入：等一帧再聚焦密码，方便浏览器密码库只填密码
+  setTimeout(() => document.getElementById('authPass')?.focus(), 60);
 }
 
 async function __pagesDoLogin() {
