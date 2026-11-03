@@ -552,6 +552,7 @@ function switchSource(mode){
   DATA.tenantQuota = src.tenantQuota;
   DATA.tenantQuotaByWeek = src.tenantQuotaByWeek || {};
   DATA.defectData = src.defectData;
+  DATA.regression = src.regression || {by_week:{},runs:[],session_status:{}};
   DATA.subline = src.subline;
   DATA.note = src.note;
   state.tenant = ''; state.period = src.defaultPeriod || '__ALL__'; state.speaker = '';
